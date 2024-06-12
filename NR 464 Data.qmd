@@ -1,0 +1,302 @@
+---
+title: "NR 464 - Senior Project"
+author: "Kaden Emerson"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    toc: true
+code-fold: true
+editor: source
+execute: 
+  error: true
+  echo: true
+  message: false
+  warning: false
+---
+
+## NR 464 Initial Data Visualization
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(ggbreak)
+library(car)
+library(ggpubr)
+WQ_data_raw <- read_csv("C:/Users/kaden/OneDrive/Documents/STAT 331/NR 464 Data/WQdata(WQ Data).csv")
+WQ_data_raw
+```
+
+```{r}
+WQ_data_pivot <- WQ_data_raw |>
+  select(Temp:Position)|>
+  group_by(Position) |>
+  pivot_longer(cols = Temp:EC, 
+               names_to = "Measurement", 
+               values_to = "Value") |>
+  mutate(Measurement = fct_recode(Measurement, 
+                                "Temperature" = "Temp", 
+                                "pH" = "pH", 
+                                "Turbidity" = "Turbidity", 
+                                "Dissolved O2 Value" = "DO_value", 
+                                "Dissolved O2 Percentage" = "DO_Perc", 
+                                "Alkalinity" = "Alkalinity", 
+                                "Electroconductivity" = "EC"))
+WQ_data_raw
+```
+
+## Quick Plot for Overall Visualization with Pivot
+
+```{r}
+WQ_data_plot <- WQ_data_pivot |>
+  filter(Measurement %in% c("Temperature",
+         "pH",
+         "Turbidity",
+         "Dissolved O2 Value")) |>
+  ggplot(aes(x = Measurement, 
+             y = Value, 
+             fill = Position)) + 
+  geom_boxplot() +
+  theme_bw()
+WQ_data_plot
+```
+
+## Graphs and Analysis of WQ Metrics
+
+### Temperature
+
+```{r}
+WQ_data_temp <- WQ_data_pivot |>
+  filter(Measurement == "Temperature") |>
+  ggplot(aes(x = Measurement, 
+             y = Value, 
+             fill = Position)) + 
+  geom_boxplot() +
+  labs(x = "Position", 
+       y = "Temperature (C)") + 
+  theme_bw() +
+  theme(axis.text.x = element_blank()) +
+  geom_text(
+    aes(label = "a"),
+    x = 1,
+    y = 19.3,
+    size = 3) +
+  geom_text(
+    aes(label = "b"),
+    x = 1.25,
+    y = 16,
+    size = 3) +
+  geom_text(
+    aes(label = "a"),
+    x = .75,
+    y = 18,
+    size = 3)
+WQ_data_temp
+```
+
+```{r}
+WQ_data_aov_temp <- 
+  aov(Temp ~ Position, data = WQ_data_raw)
+TukeyHSD(WQ_data_aov_temp)
+summary(WQ_data_aov_temp)
+```
+
+### pH
+
+```{r}
+WQ_data_aov_ph <- 
+  aov(pH ~ Position, data = WQ_data_raw)
+TukeyHSD(WQ_data_aov_ph)
+summary(WQ_data_aov_ph)
+
+WQ_data_pH <- WQ_data_pivot |>
+  filter(Measurement == "pH") |>
+  ggplot(aes(x = Measurement, 
+             y = Value, 
+             fill = Position)) + 
+  geom_boxplot() +
+  labs(x = "Position", 
+       y = "pH Value") +
+  theme_bw() +
+  theme(axis.text.x = element_blank()) +
+  geom_text(
+    aes(label = "a"),
+    x = 1,
+    y = 8.2,
+    size = 3) +
+  geom_text(
+    aes(label = "b"),
+    x = 1.25,
+    y = 7.1,
+    size = 3) +
+  geom_text(
+    aes(label = "ab"),
+    x = .75,
+    y = 7.6,
+    size = 3)
+WQ_data_pH
+```
+
+### Turbidity
+
+```{r}
+WQ_data_aov_turb <- 
+  aov(Turbidity ~ Position, data = WQ_data_raw)
+TukeyHSD(WQ_data_aov_turb)
+summary(WQ_data_aov_turb)
+
+WQ_data_turb <- WQ_data_pivot |>
+  filter(Measurement == "Turbidity") |>
+  ggplot(aes(x = Measurement, 
+             y = Value, 
+             fill = Position)) + 
+  geom_boxplot() +
+  labs(x = "Position", 
+       y = "Turbidity (NTU)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank())
+WQ_data_turb
+```
+
+### Dissolved Oxygen (Values)
+
+```{r}
+WQ_data_aov_DO_val <- 
+  aov(DO_value ~ Position, data = WQ_data_raw)
+TukeyHSD(WQ_data_aov_DO_val)
+summary(WQ_data_aov_DO_val)
+
+WQ_data_DO_val <- WQ_data_pivot |>
+  filter(Measurement == "Dissolved O2 Value") |>
+  ggplot(aes(x = Measurement, 
+             y = Value, 
+             fill = Position)) + 
+  geom_boxplot() +
+  labs(x = "Position", 
+       y = "Dissolved Oxygen (ppm)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank()) +
+  geom_text(
+    aes(label = "a"),
+    x = 1,
+    y = 11.1,
+    size = 3) +
+  geom_text(
+    aes(label = "b"),
+    x = 1.25,
+    y = 10,
+    size = 3) +
+  geom_text(
+    aes(label = "b"),
+    x = .75,
+    y = 9.6,
+    size = 3)
+WQ_data_DO_val
+```
+
+### Dissolved Oxygen (Percentage)
+
+```{r}
+WQ_data_aov_DO_perc <- 
+  aov(DO_Perc ~ Position, data = WQ_data_raw)
+TukeyHSD(WQ_data_aov_DO_perc)
+summary(WQ_data_aov_DO_perc)
+
+WQ_data_DO_perc <- WQ_data_pivot |>
+  filter(Measurement == "Dissolved O2 Percentage") |>
+  ggplot(aes(x = Measurement, 
+             y = Value, 
+             fill = Position)) + 
+  geom_boxplot() +
+  labs(x = "Position", 
+       y = "Dissolved Oxygen (%)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank())
+WQ_data_DO_perc
+```
+
+### Alkalinity
+
+```{r}
+WQ_data_aov_alk <- 
+  aov(Alkalinity ~ Position, data = WQ_data_raw)
+TukeyHSD(WQ_data_aov_alk)
+summary(WQ_data_aov_alk)
+
+WQ_data_alk <- WQ_data_pivot |>
+  filter(Measurement == "Alkalinity") |>
+  ggplot(aes(x = Measurement, 
+             y = Value, 
+             fill = Position)) + 
+  geom_boxplot() +
+  labs(x = "Position", 
+       y = "Alkalinity (ppm)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank()) +
+  geom_text(
+    aes(label = "b"),
+    x = 1,
+    y = 185,
+    size = 3) +
+  geom_text(
+    aes(label = "a"),
+    x = 1.25,
+    y = 235,
+    size = 3) +
+  geom_text(
+    aes(label = "b"),
+    x = .75,
+    y = 190,
+    size = 3)
+WQ_data_alk
+```
+
+### Electroconductivity
+
+```{r}
+WQ_data_aov_ec <- 
+  aov(EC ~ Position, data = WQ_data_raw)
+summary(WQ_data_aov_ec)
+
+WQ_data_ec <- WQ_data_pivot |>
+  filter(Measurement == "Electroconductivity") |>
+  ggplot(aes(x = Measurement, 
+             y = Value, 
+             fill = Position)) + 
+  geom_boxplot() +
+  labs(x = "Position", 
+       y = "Electroconductivity (mS/cm)") +
+  theme_bw() +
+  theme(axis.text.x = element_blank())
+WQ_data_ec
+```
+
+## BMI
+
+```{r}
+WQdata_BMI <- read_csv("C:/Users/kaden/OneDrive/Documents/STAT 331/NR 464 Data/WQdata_BMI.csv", n_max = 8)
+```
+
+```{r}
+WQdata_BMI_fac <- WQdata_BMI|>
+  mutate(Sensitivity = as.factor(Sensitivity))
+
+WQdata_BMI_aov <- aov(Abundance ~ Sensitivity, data = WQdata_BMI_fac)
+TukeyHSD(WQdata_BMI_aov)
+summary(WQdata_BMI_aov)
+shapiro.test(WQdata_BMI$Abundance)
+leveneTest(Abundance ~ Sensitivity, WQdata_BMI_fac)
+kruskal.test(Abundance ~ Sensitivity, data = WQdata_BMI_fac)
+
+WQdata_BMI |>
+  ggplot(aes(x = Species, 
+             y = Abundance, 
+             fill = Sensitivity)) +
+  geom_col() +
+  scale_y_break(c(25, 100), scales = 1) +
+  scale_y_break(c(120, 400), scales = 2) +
+  labs(x = "Taxa", 
+       y = "Abundance (number of individuals)") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = .65))
+```
